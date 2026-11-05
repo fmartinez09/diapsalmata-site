@@ -17,8 +17,8 @@ También puede abrirse `dist/index.html` directamente. Las fuentes de Google nec
 ## Archivos
 
 - `dist/index.html`: portada y categorías Notes / Research / Projects.
-- `dist/style.css`: composición, adaptación móvil y objeto CSS 3D.
-- `dist/script.js`: controles del objeto y navegación al índice.
+- `dist/style.css`: composición, adaptación móvil y vegetación SVG.
+- `dist/script.js`: crecimiento de la vegetación al entrar en pantalla y navegación al índice. La animación dura 3,4 segundos, ocurre una vez y respeta movimiento reducido.
 - `dist/landscape.jpg`: imagen aportada por el autor para esta propuesta local.
 
 Los títulos del índice son provisionales. No hay artículos, fechas o resultados publicados. Cuando existan entradas, el inicio podrá mostrar las más recientes con su tipo y fecha, y enlazar al artículo completo.
