@@ -8,6 +8,24 @@ footer{border-top:1px solid #c4c8b9;max-width:1120px;width:calc(100% - 96px);mar
 @media(max-width:650px){.masthead{height:75px;margin:0 22px}.name{font-size:19px}.masthead nav{gap:15px;font-size:10px}.opening{height:calc(83svh - 75px);min-height:490px}.opening figure{width:245px;height:225px}.opening h1{font-size:28px}.archive{width:calc(100% - 44px);margin-top:40px}.archive-heading>span{display:none}.archive-layout{grid-template-columns:1fr;gap:65px}.archive-heading{margin-bottom:28px}.entry h3{font-size:29px}footer{width:calc(100% - 44px)}}
 @media(prefers-reduced-motion:reduce){:root{scroll-behavior:auto}*{transition:none!important}}
 
-.botanical{align-self:end;min-width:0;pointer-events:none;margin:0 -14px -20px -20px}.botanical svg{display:block;width:100%;height:auto;overflow:hidden}.stem{fill:none;stroke:#59734a;stroke-width:1.2;stroke-linecap:round}.leaf{fill:url(#leaf-green)}.vein{fill:none;stroke:#bdd0a0;stroke-width:.35;opacity:.55}.frond-0{opacity:.8}.frond-3{opacity:.8}.frond-4{opacity:.6}.frond-5{fill:#385f3d}.botanical[data-growing] .stem{stroke-dasharray:1;stroke-dashoffset:1}.botanical[data-growing] .leaf{transform:scale(0)}
-@media(max-width:650px){.botanical{width:min(100%,380px);margin:-25px auto -20px}.archive-layout{gap:35px}}
-@media(prefers-reduced-motion:reduce){.botanical[data-growing] .stem{stroke-dashoffset:0!important}.botanical[data-growing] .leaf{transform:scale(1)!important}}
+.archive-layout{overflow-anchor:none;min-height:430px}
+.botanical{align-self:start;grid-column:2;grid-row:1;min-width:0;pointer-events:none;margin:0;visibility:hidden}
+.botanical[data-revealed]{visibility:visible}
+.botanical svg{display:block;width:100%;height:auto;overflow:hidden}
+.entries{grid-column:1;grid-row:1;min-width:0}
+.stem{fill:none;stroke:#547044;stroke-linecap:round}
+.vein{fill:none;stroke:#b6c497;stroke-width:.55;opacity:.65}
+.small-vein{fill:none;stroke:#afc293;stroke-width:.35;opacity:.42}
+.botanical[data-growing] .stem{stroke-dasharray:1;stroke-dashoffset:1}
+.botanical[data-growing] .leaf,.botanical[data-growing] .bloom{transform:scale(0)}
+@media(max-width:650px){.botanical{grid-column:1;grid-row:1;width:min(100%,380px);margin:0 auto}.entries{grid-row:2}.archive-layout{gap:35px}}
+@media(prefers-reduced-motion:reduce){.botanical[data-growing] .stem{stroke-dashoffset:0!important}.botanical[data-growing] .leaf,.botanical[data-growing] .bloom{transform:scale(1)!important}}
+:root{--green:#456c4c;--blue:var(--green)}
+.masthead nav,.masthead nav a:hover,.masthead .name:hover,.down,footer a[aria-label="Volver arriba"]{color:var(--green)}
+.entry-link{color:var(--green);text-decoration:underline;text-decoration-color:#9eb49b;text-underline-offset:4px}.entry-link span{font-size:10px}
+.about{width:calc(100% - 96px);max-width:1120px;margin:100px auto 160px;min-height:calc(100svh - 400px)}
+.about h1{font:400 clamp(42px,5vw,62px)/1.1 var(--serif);letter-spacing:-.035em;margin:0 0 48px}
+.about-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,380px);gap:clamp(50px,10vw,140px);align-items:start}
+.about-copy{max-width:540px}.about-copy p{font:18px/1.8 Georgia,serif;margin:0 0 23px;color:#333a31}
+.about figure{margin:0}.about img{width:100%;height:auto;aspect-ratio:1;object-fit:cover;object-position:45% center;display:block}
+@media(max-width:650px){.masthead{gap:16px}.masthead nav{gap:clamp(8px,3vw,15px);font-size:10px}.about{width:calc(100% - 44px);margin:65px auto 90px;min-height:0}.about h1{margin-bottom:32px}.about-layout{grid-template-columns:1fr;gap:25px}.about-copy p{font-size:17px}.about figure{max-width:380px}}

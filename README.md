@@ -17,12 +17,20 @@ También puede abrirse `dist/index.html` directamente. Las fuentes de Google nec
 ## Archivos
 
 - `dist/index.html`: portada y categorías Notes / Research / Projects.
-- `dist/style.css`: composición, adaptación móvil y vegetación SVG.
-- `dist/script.js`: crecimiento de la vegetación al entrar en pantalla y navegación al índice. La animación dura 3,4 segundos, ocurre una vez y respeta movimiento reducido.
+- `dist/about.html`: página About con texto e imagen provisionales; reemplaza el `src` y el texto `alt` de la imagen cuando elijas otra fotografía.
+- `dist/style.css`: composición, adaptación móvil y vegetación SVG. La ilustración permanece anclada arriba, independiente de la altura de los desplegables; en móvil precede a las categorías.
+- `dist/script.js`: la vegetación permanece oculta hasta que el título «Índice» entra en el 88% superior de la ventana. Entonces crece una sola vez durante 3,4 segundos. Con movimiento reducido se revela en ese mismo punto, sin animación.
+- `scripts/generate-botanical.cjs`: fuente de la ilustración SVG: raíz abajo a la derecha, ramas hacia arriba a la izquierda, cuatro rosas rosadas, tres margaritas y un capullo. Ejecutar `node scripts/generate-botanical.cjs` para regenerarla en el HTML.
 - `dist/landscape.jpg`: imagen aportada por el autor para esta propuesta local.
 
-Los títulos del índice son provisionales. No hay artículos, fechas o resultados publicados. Cuando existan entradas, el inicio podrá mostrar las más recientes con su tipo y fecha, y enlazar al artículo completo.
+Los títulos del índice son provisionales. Hay un artículo de ejemplo enlazado desde Research; es un borrador con texto de relleno, no un resultado publicado.
 
-El artículo tendrá navegación superior, índice de contenidos a la izquierda, texto y figura central, y metadatos a la derecha; en móvil se apilarán.
+## Crear y editar artículos
+
+El ejemplo está en `dist/research/grados-de-turing-y-subtopos.html`. Sirve como plantilla para Notes, Research o Projects: duplica el archivo dentro de la carpeta que corresponda, edita el título, la categoría y el contenido, y añade un enlace desde el índice de `dist/index.html`. Los enlaces `../` del ejemplo funcionan si el nuevo archivo también queda en una carpeta de primer nivel dentro de `dist`.
+
+Cada sección usa un `<section id="...">`: mantén su `id` sincronizado con el enlace `href="#..."` del índice lateral. Añade fecha o autor a la lista `<dl>` solo cuando correspondan. La fotografía de portada es provisional; reemplaza su `src` y su texto `alt` por los de la imagen definitiva. Para incluir otras imágenes, coloca los archivos en `dist` y usa `<figure><img src="../ruta/imagen.jpg" alt="Descripción"><figcaption>Pie de imagen</figcaption></figure>`.
+
+Para diagramas interactivos, guarda un HTML autocontenido en `dist/diagrams/` y embébelo como en el ejemplo con `<iframe src="../diagrams/ejemplo.html" title="Descripción del diagrama" sandbox="allow-scripts"></iframe>`. El ejemplo es provisional e independiente; admite HTML, CSS y JavaScript. El sandbox permite sus scripts, pero aísla su origen: diagramas que requieran acceso a cookies, almacenamiento o a la página principal necesitarán otro diseño de integración. Usa únicamente código de diagramas de confianza. `dist/article.css` reúne los estilos compartidos. En móvil, el índice y los metadatos se apilan sobre el artículo.
 
 Se retiró el manifiesto de hosting local. La eliminación del sitio remoto sigue pendiente: las herramientas disponibles durante esta revisión no ofrecían eliminar/despublicar.
