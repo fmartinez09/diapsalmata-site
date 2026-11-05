@@ -17,11 +17,13 @@ También puede abrirse `dist/index.html` directamente. Las fuentes de Google nec
 ## Archivos
 
 - `dist/index.html`: portada y categorías Notes / Research / Projects.
+- `dist/collage.js`: revela cuatro recuadros en secuencia hacia la derecha de la imagen central, una vez cargadas las fotos. La composición usa recortes provisionales de `landscape.jpg` y `profile.jpg`; los tamaños se adaptan a móvil y la preferencia de movimiento reducido muestra el collage sin animarlo.
 - `dist/about.html`: página About con texto e imagen provisionales; reemplaza el `src` y el texto `alt` de la imagen cuando elijas otra fotografía.
 - `dist/style.css`: composición, adaptación móvil y vegetación SVG. La ilustración permanece anclada arriba, independiente de la altura de los desplegables; en móvil precede a las categorías.
 - `dist/script.js`: la vegetación permanece oculta hasta que el título «Índice» entra en el 88% superior de la ventana. Entonces crece una sola vez durante 3,4 segundos. Con movimiento reducido se revela en ese mismo punto, sin animación.
 - `scripts/generate-botanical.cjs`: fuente de la ilustración SVG: raíz abajo a la derecha, ramas hacia arriba a la izquierda, cuatro rosas rosadas, tres margaritas y un capullo. Ejecutar `node scripts/generate-botanical.cjs` para regenerarla en el HTML.
 - `dist/landscape.jpg`: imagen aportada por el autor para esta propuesta local.
+- `dist/liquid.js`: masa líquida de partículas con relajación de densidad, viscosidad y cohesión. El cursor empuja las partículas cercanas; la masa se estira y queda donde se desplaza, sin seguir al cursor. Un campo de densidad alimenta la superficie WebGL con refracción, reflejos y dispersión cromática. Probar mediante el servidor local; si WebGL no está disponible, se conserva la fotografía. Respeta la preferencia de movimiento reducido y pausa fuera de pantalla.
 
 Los títulos del índice son provisionales. Hay un artículo de ejemplo enlazado desde Research; es un borrador con texto de relleno, no un resultado publicado.
 
