@@ -1,4 +1,16 @@
 (() => {
+  function openSection() {
+    const id = location.hash.slice(1);
+    if (!['notes', 'research', 'projects'].includes(id)) return;
+    const section = document.getElementById(id);
+    if (section) section.open = true;
+  }
+  window.addEventListener('hashchange', openSection);
+  document.querySelectorAll('nav a').forEach(link => link.addEventListener('click', () => {
+    const section = document.querySelector(link.getAttribute('href'));
+    if (section instanceof HTMLDetailsElement) section.open = true;
+  }));
+  openSection();
   const stage = document.querySelector('#object-stage');
   const sculpture = document.querySelector('#sculpture');
   const reset = document.querySelector('#reset-view');
