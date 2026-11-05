@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f4f2e9">
+  <meta name="description" content="Diapsalmata: un espacio para pensar y explorar matemáticas, sistemas y software.">
+  <title>diapsalmata — sistemas, formas y observaciones</title>
+  <link rel="icon" type="image/svg+xml" href="./mark.svg">
+  <link rel="stylesheet" href="./style.css">
+  <script src="./script.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#contenido">Saltar al contenido</a>
+  <header class="masthead wrap">
+    <a class="wordmark" href="#inicio" aria-label="Diapsalmata, inicio"><span class="mark" aria-hidden="true">✳</span> diapsalmata<span class="wordmark-dot">.</span></a>
+    <span class="masthead-note">UNA PUBLICACIÓN EN CONSTRUCCIÓN<br>MATEMÁTICAS &nbsp; / &nbsp; SISTEMAS</span>
+    <nav aria-label="Principal"><a href="#indice">Índice <span>↗</span></a><a href="#sobre">Acerca <span>↗</span></a></nav>
+  </header>
+
+  <main id="contenido">
+    <section class="intro wrap" id="inicio" aria-labelledby="intro-title">
+      <div class="intro-copy">
+        <p class="eyebrow"><span class="asterisk">✳</span> DIAPSALMATA &nbsp; / &nbsp; CUADERNO ABIERTO</p>
+        <h1 id="intro-title">Formas de<br><em>observar</em><br>un sistema<span class="blue-dot">.</span></h1>
+        <div class="intro-bottom"><span class="line-mark" aria-hidden="true"></span><p>Una colección de ideas entre las matemáticas, la computación y las cosas que construimos para entenderlas.</p></div>
+        <a class="text-link intro-link" href="#indice">Explorar el índice <span aria-hidden="true">↘</span></a>
+      </div>
+
+      <div class="object-area">
+        <div class="object-heading"><span>ESTUDIO N.º 01</span><span>FORMA / PERSPECTIVA</span></div>
+        <div class="object-stage" id="object-stage" tabindex="0" role="application" aria-label="Estudio tridimensional interactivo. Arrastra para girar. También puedes usar las flechas del teclado.">
+          <div class="stage-grid" aria-hidden="true"></div><div class="stage-cross cross-one" aria-hidden="true">+</div><div class="stage-cross cross-two" aria-hidden="true">+</div>
+          <div class="scene" aria-hidden="true"><div class="sculpture" id="sculpture">
+            <div class="pane pane-back"><i></i><b></b><span class="pane-index">03</span></div>
+            <div class="pane pane-middle"><i></i><b></b><span class="pane-index">02</span></div>
+            <div class="pane pane-front"><i></i><b></b><span class="pane-index">01</span></div>
+            <div class="thread thread-one"></div><div class="thread thread-two"></div><div class="thread thread-three"></div>
+          </div></div>
+          <div class="stage-caption"><span>FIG. 01 &nbsp; / &nbsp; CAPAS EN EL ESPACIO</span><span>↗</span></div>
+        </div>
+        <div class="object-foot"><span>ARRASTRA PARA GIRAR &nbsp; ↔</span><button id="reset-view" type="button">RESTABLECER ↺</button></div>
+      </div>
+    </section>
+
+    <div class="transition wrap"><span>01 / ÍNDICE</span><span>UN CONJUNTO DE PREGUNTAS, TODAVÍA ABIERTO</span><span>↓</span></div>
+
+    <section class="index-section wrap" id="indice" aria-labelledby="index-title">
+      <div class="section-heading"><div><p class="eyebrow">LECTURAS Y LÍNEAS DE TRABAJO</p><h2 id="index-title">Un índice<br><em>en movimiento</em><span class="blue-dot">.</span></h2></div><p class="section-intro">Un punto de partida para reunir preguntas, implementaciones e ideas. Las conexiones entre ellas también forman parte del trabajo.</p></div>
+
+      <div class="index-layout">
+        <div class="side-note"><span>CUATRO ENTRADAS</span><span class="vertical-rule"></span><p>Selecciona una línea<br>para ver los temas.</p><span class="side-symbol">↳</span></div>
+        <div class="entries">
+          <details class="entry" open><summary><span class="entry-no">01</span><span class="entry-title">Observar <em>los sistemas</em></span><span class="entry-toggle" aria-hidden="true"></span></summary><div class="entry-body"><p>Instrumentación, trazas y maneras de mirar el comportamiento de sistemas complejos.</p><ul><li>OpenTelemetry en FoundationDB</li><li>Trazas para Bedrock</li><li>Partial trace sampling y head-based sampling</li><li>Flujos infinitos de telemetría</li></ul><span class="entry-tag">OBSERVABILIDAD &nbsp; / &nbsp; TELEMETRÍA</span></div></details>
+          <details class="entry"><summary><span class="entry-no">02</span><span class="entry-title">Ejecutar <em>y verificar</em></span><span class="entry-toggle" aria-hidden="true"></span></summary><div class="entry-body"><p>Exploraciones sobre simulación determinista, comportamiento y modelos formales.</p><ul><li>Deterministic simulation testing y bisimulación</li><li>Evaluación con Bombadil</li><li>VM determinista, modelos de decisión y PRISM</li></ul><span class="entry-tag">SIMULACIÓN &nbsp; / &nbsp; VERIFICACIÓN</span></div></details>
+          <details class="entry"><summary><span class="entry-no">03</span><span class="entry-title">Límites <em>de lo computable</em></span><span class="entry-toggle" aria-hidden="true"></span></summary><div class="entry-body"><p>Preguntas matemáticas sobre computabilidad, estructuras y relaciones.</p><ul><li>Grados de Turing y subtopos</li><li>Hipercomputación relativa, MH y métrica de Kerr</li><li>Teoría descriptiva de conjuntos, coalgebras y bisimulación</li></ul><span class="entry-tag">LÓGICA &nbsp; / &nbsp; ESTRUCTURAS</span></div></details>
+          <details class="entry"><summary><span class="entry-no">04</span><span class="entry-title">Construir <em>infraestructura</em></span><span class="entry-toggle" aria-hidden="true"></span></summary><div class="entry-body"><p>Herramientas y estructuras para conectar piezas de software.</p><ul><li>Catálogo de API con JanusGraph, JuiceFS y Backstage</li></ul><span class="entry-tag">SISTEMAS &nbsp; / &nbsp; HERRAMIENTAS</span></div></details>
+        </div>
+      </div>
+    </section>
+
+    <section class="interlude wrap" aria-label="Estudio visual"><div class="interlude-art"><svg viewBox="0 0 1200 360" role="img" aria-labelledby="art-title" preserveAspectRatio="xMidYMid slice"><title id="art-title">Una forma azul suspendida sobre líneas que recuerdan un horizonte</title><defs><linearGradient id="a" x1="0" x2="1" y2="1"><stop stop-color="#0d3182"/><stop offset=".55" stop-color="#325ba3"/><stop offset="1" stop-color="#182c65"/></linearGradient><linearGradient id="b" x1="0" x2="0" y2="1"><stop stop-color="#748ab3" stop-opacity=".85"/><stop offset="1" stop-color="#d4d8d3" stop-opacity=".15"/></linearGradient></defs><rect width="1200" height="360" fill="#d8e0e0"/><rect y="196" width="1200" height="164" fill="url(#a)"/><g fill="none" stroke="#c2d2de" opacity=".45" stroke-width=".8"><path d="M0 211 Q180 203 352 215 T740 214 T1200 211"/><path d="M0 229 Q170 238 370 224 T780 231 T1200 222"/><path d="M0 253 Q220 244 420 255 T850 250 T1200 256"/><path d="M0 281 Q230 272 480 284 T920 279 T1200 286"/><path d="M0 316 Q180 302 420 317 T850 311 T1200 320"/></g><path d="M590 53 L795 95 L766 274 L560 232 Z" fill="url(#b)" stroke="#f3f4ef" stroke-width="1.5"/><path d="M616 37 L817 79 L789 257 L588 216 Z" fill="#c5d7ee" fill-opacity=".18" stroke="#eff4f6" stroke-width="1.5"/><path d="M585 55 C646 114 703 181 786 256" stroke="#f7f9fa" stroke-width="2" fill="none" opacity=".9"/><path d="M610 40 C666 100 722 170 810 239" stroke="#193b89" stroke-width="1" fill="none" opacity=".8"/><circle cx="695" cy="154" r="3" fill="#fbf8e9"/></svg><span class="interlude-label">UN ESTUDIO SOBRE MIRAR &nbsp; / &nbsp; 01</span></div><div class="interlude-caption"><span>FIG. 02 &nbsp; — &nbsp; UN ENCUADRE, VARIAS CAPAS</span><span>DIAPSALMATA</span></div></section>
+
+    <section class="about wrap" id="sobre"><div class="about-left"><p class="eyebrow">02 / ACERCA</p><h2>Un lugar para<br><em>seguir pensando.</em></h2></div><div class="about-right"><p>Diapsalmata es un espacio en construcción para reunir trabajo e ideas en torno a la computación, la lógica y los sistemas.</p><p>Por ahora, este índice es una forma de empezar: las piezas, sus conexiones y sus preguntas irán tomando forma con el tiempo.</p><a class="text-link" href="#inicio">Volver al inicio <span aria-hidden="true">↑</span></a></div></section>
+  </main>
+  <footer class="footer wrap"><a class="wordmark footer-brand" href="#inicio"><span class="mark" aria-hidden="true">✳</span> diapsalmata<span class="wordmark-dot">.</span></a><span>UN ESPACIO EN CONSTRUCCIÓN</span><span>MATEMÁTICAS &nbsp; / &nbsp; SISTEMAS &nbsp; / &nbsp; SOFTWARE</span></footer>
+</body>
+</html>
