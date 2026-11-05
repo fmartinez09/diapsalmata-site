@@ -17,7 +17,8 @@
     precision highp float;
     varying vec2 uv;
     uniform sampler2D photograph, liquidField;
-    uniform vec2 resolution, centre, imageSize;
+    uniform vec2 resolution, imageSize, texel;
+    uniform float clock;
 
     vec3 scene(vec2 p) {
       float cover = max(resolution.x / imageSize.x, resolution.y / imageSize.y);
@@ -25,45 +26,36 @@
       vec2 offset = (resolution - size) * vec2(.45, .5);
       return texture2D(photograph, clamp((p - offset) / size, .001, .999)).rgb;
     }
-    float densityAt(vec2 p) {
-      return texture2D(liquidField, clamp(p/resolution, .001, .999)).r;
-    }
     float heightAt(vec2 p) {
-      return sqrt(max(.0001, densityAt(p)-.105));
+      vec2 encoded = texture2D(liquidField, clamp(p, .001, .999)).rg;
+      return (encoded.r * (65280./65535.) + encoded.g * (255./65535.))*2.-1.;
     }
     void main() {
-      vec2 p = vec2(uv.x, 1.-uv.y) * resolution;
-      float radius = min(resolution.x, resolution.y) * .15;
-      float density = densityAt(p);
-      if (density < .095) { gl_FragColor = vec4(0.); return; }
-      float e = 1.8;
-      vec2 slope = vec2(heightAt(p+vec2(e,0.))-heightAt(p-vec2(e,0.)),
-                        heightAt(p+vec2(0.,e))-heightAt(p-vec2(0.,e))) * radius / (2.*e);
-      vec3 normal = normalize(vec3(-slope*1.6, 1.));
-      float thickness = heightAt(p);
-      // A rounded meniscus folds and compresses the picture near the perimeter.
-      float rim = 1.-smoothstep(.105,.34,density);
-      vec2 bend = normal.xy * radius * (.47 + .32*rim);
-      vec2 refracted = p - bend;
-      float dispersion = pow(rim, 2.) * radius * .04;
-      vec3 transmitted = vec3(scene(refracted-normal.xy*dispersion).r,
-                              scene(refracted).g,
-                              scene(refracted+normal.xy*dispersion).b);
-      vec2 reflectedAt = centre + normal.xy * radius * 1.65;
-      vec3 reflected = scene(reflectedAt);
-      // High-contrast reflections and small white light sources give the rim volume.
-      reflected = pow(reflected, vec3(1.3)) * .75;
-      float fresnel = .025 + .82*pow(1.-normal.z, 2.2);
-      vec3 colour = mix(transmitted, reflected, fresnel);
-      vec3 lightA = normalize(vec3(-.67,-.55,.48));
-      vec3 lightB = normalize(vec3(.72,.55,.25));
-      float glint = pow(max(dot(normal,lightA),0.), 28.)*1.8
-                  + pow(max(dot(normal,lightB),0.), 42.)*1.35;
-      float edgeLight = exp(-pow((density-.117)/.014,2.))
-                      * (.12 + .65*pow(max(dot(normal.xy,normalize(vec2(-.8,-.5))),0.),5.));
-      colour += vec3(.96,.98,1.) * (glint + edgeLight);
-      colour += vec3(.015,.025,.025)*thickness;
-      gl_FragColor = vec4(colour, smoothstep(.095,.12,density));
+      vec2 st = vec2(uv.x, 1.-uv.y);
+      vec2 p = st * resolution;
+      vec2 pixel = texel * resolution;
+      vec2 slope = vec2(
+        (heightAt(st+vec2(texel.x,0.))-heightAt(st-vec2(texel.x,0.)))/(2.*pixel.x),
+        (heightAt(st+vec2(0.,texel.y))-heightAt(st-vec2(0.,texel.y)))/(2.*pixel.y));
+      // A faint current keeps the whole photograph gently alive between touches.
+      slope += .00065*vec2(cos(p.x*.032 + p.y*.019-clock*.35),
+                            sin(p.y*.037 - p.x*.014+clock*.27));
+      vec3 normal = normalize(vec3(-slope*36., 1.));
+      vec2 bend = normal.xy * 31.;
+      float dispersion = min(1.8,length(normal.xy)*2.5);
+      vec2 refracted = p-bend;
+      vec3 colour = vec3(scene(refracted-normal.xy*dispersion).r,
+                         scene(refracted).g,
+                         scene(refracted+normal.xy*dispersion).b);
+      // Reflections grow on wave crests; a calm surface keeps the image clear.
+      float fresnel = .32*pow(1.-normal.z,2.);
+      vec3 reflected = scene(p+normal.xy*70.);
+      colour = mix(colour,reflected*.85,fresnel);
+      vec3 light = normalize(vec3(-.5,-.4,.65));
+      float highlight = pow(max(dot(normal,light),0.),55.)*.65;
+      colour += vec3(.94,.98,1.)*highlight;
+      colour *= 1. + clamp((slope.x-slope.y)*1.8,-.045,.045);
+      gl_FragColor = vec4(colour,1.);
     }
   `;
   function compile(type, source) {
@@ -88,7 +80,7 @@
   const position = gl.getAttribLocation(program, 'position');
   gl.enableVertexAttribArray(position);
   gl.vertexAttribPointer(position, 2, gl.FLOAT, false, 0, 0);
-  const uniform = Object.fromEntries(['resolution','centre','imageSize']
+  const uniform = Object.fromEntries(['resolution','imageSize','texel','clock']
     .map(name => [name, gl.getUniformLocation(program, name)]));
   const texture = gl.createTexture();
   gl.bindTexture(gl.TEXTURE_2D, texture);
@@ -106,136 +98,131 @@
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
   gl.uniform1i(gl.getUniformLocation(program, 'liquidField'), 1);
-  const grid = 256, field = new Float32Array(grid*grid), pixels = new Uint8Array(grid*grid);
   const reduced = matchMedia('(prefers-reduced-motion: reduce)');
-  const particles = [], strokes = [];
-  let width = 0, height = 0, support = 0;
-  let frame = 0, previous = 0, visible = true, ready = false, lastPointer = null;
+  const grid = 128, cells = grid*grid;
+  const heights = new Float32Array(cells), velocity = new Float32Array(cells);
+  const nextVelocity = new Float32Array(cells), pixels = new Uint8Array(cells*4);
+  const impulse = new Float32Array(cells);
+  const strokes = [];
+  let width = 0, height = 0, frame = 0, previous = 0, accumulator = 0;
+  let visible = true, ready = false, lastPointer = null;
   function requestDraw() {
     if (ready && visible && !document.hidden && !frame) frame = requestAnimationFrame(draw);
   }
   function resize() {
     const rect = figure.getBoundingClientRect();
-    const oldWidth = width, oldHeight = height;
     width = rect.width; height = rect.height;
-    support = Math.min(width,height)*.065;
-    const ratio = Math.min(devicePixelRatio || 1, 2);
+    const ratio = Math.min(devicePixelRatio || 1,2);
     canvas.width = Math.round(width*ratio); canvas.height = Math.round(height*ratio);
-    gl.viewport(0, 0, canvas.width, canvas.height);
-    if (!particles.length) {
-      const spacing = support*.36, radius = Math.min(width,height)*.13;
-      for (let row = -7; row <= 7; row++) for (let col = -7; col <= 7; col++) {
-        const px = (col+(row%2)*.5)*spacing, py = row*spacing*.866;
-        if (px*px+py*py > radius*radius) continue;
-        particles.push({x:width*.52+px, y:height*.49+py, vx:0, vy:0});
-      }
-    } else if (oldWidth && oldHeight) {
-      particles.forEach(p => { p.x *= width/oldWidth; p.y *= height/oldHeight; p.vx = p.vy = 0; });
-    }
+    gl.viewport(0,0,canvas.width,canvas.height);
     lastPointer = null; strokes.length = 0;
     requestDraw();
   }
-  // Double-density relaxation: local density resists compression, while negative
-  // pressure keeps the free surface cohesive. There is no target for the mass.
-  function simulate(dt) {
-    const h = support, h2 = h*h;
-    const before = particles.map(p => [p.x,p.y]);
-    for (const p of particles) {
-      p.vx *= Math.pow(.93,dt); p.vy *= Math.pow(.93,dt);
-      p.x += p.vx*dt; p.y += p.vy*dt;
-    }
+  function disturb() {
+    if (!strokes.length) return;
+    impulse.fill(0);
+    const radius = Math.min(width,height)*.085;
     for (const stroke of strokes) {
-      const sx = stroke.x-stroke.px, sy = stroke.y-stroke.py;
-      const length2 = sx*sx+sy*sy;
-      for (const p of particles) {
-        const along = Math.max(0,Math.min(1,((p.x-stroke.px)*sx+(p.y-stroke.py)*sy)/(length2||1)));
-        const distance = Math.hypot(p.x-stroke.px-sx*along,p.y-stroke.py-sy*along);
-        const influence = Math.pow(Math.max(0,1-distance/(h*1.8)),2);
-        const limit = Math.min(1,h*.65/Math.max(1,Math.hypot(sx,sy)));
-        p.x += sx*limit*influence*.8; p.y += sy*limit*influence*.8;
+      const sx = stroke.x-stroke.px, sy = stroke.y-stroke.py, length2 = sx*sx+sy*sy;
+      const strength = stroke.tap ? .16 : Math.min(.075,Math.sqrt(length2)*.006);
+      const minX = Math.max(0,Math.floor((Math.min(stroke.x,stroke.px)-radius)/width*grid));
+      const maxX = Math.min(grid-1,Math.ceil((Math.max(stroke.x,stroke.px)+radius)/width*grid));
+      const minY = Math.max(0,Math.floor((Math.min(stroke.y,stroke.py)-radius)/height*grid));
+      const maxY = Math.min(grid-1,Math.ceil((Math.max(stroke.y,stroke.py)+radius)/height*grid));
+      for (let y = minY; y <= maxY; y++) for (let x = minX; x <= maxX; x++) {
+        const px = x/grid*width, py = y/grid*height;
+        const along = Math.max(0,Math.min(1,((px-stroke.px)*sx+(py-stroke.py)*sy)/(length2||1)));
+        const r = Math.hypot(px-stroke.px-sx*along,py-stroke.py-sy*along)/radius;
+        // A depression displaces water into a surrounding crest. This radial
+        // kernel integrates to zero, so stirring cannot drain the height field.
+        if (r < 1) impulse[y*grid+x] -= strength*(1-r*r)**3*(1-5*r*r);
       }
     }
+    // Correct the discrete kernel and strokes truncated by the image boundary.
+    const meanImpulse = impulse.reduce((sum,value) => sum+value,0)/cells;
+    for (let i = 0; i < cells; i++) velocity[i] += impulse[i]-meanImpulse;
     strokes.length = 0;
-    for (let iteration = 0; iteration < 3; iteration++) {
-      for (let i = 0; i < particles.length; i++) {
-        const p = particles[i], neighbours = [];
-        let density = 0, nearDensity = 0;
-        for (let j = 0; j < particles.length; j++) {
-          if (i === j) continue;
-          const n = particles[j], dx = n.x-p.x, dy = n.y-p.y, r2 = dx*dx+dy*dy;
-          if (r2 >= h2 || r2 < .00001) continue;
-          const r = Math.sqrt(r2), q = 1-r/h;
-          density += q*q; nearDensity += q*q*q;
-          neighbours.push([n,dx/r,dy/r,q]);
-        }
-        const pressure = .32*(density-3.2), nearPressure = .55*nearDensity;
-        for (const [n,nx,ny,q] of neighbours) {
-          const displacement = Math.max(-.18,Math.min(.5,(pressure*q+nearPressure*q*q)*dt*dt))*.5;
-          n.x += nx*displacement; n.y += ny*displacement;
-          p.x -= nx*displacement; p.y -= ny*displacement;
-        }
-      }
+  }
+  // Damped height-field waves: neighbours exchange height and momentum across
+  // the full image. A fixed step keeps propagation stable at different frame rates.
+  function simulate() {
+    for (let y = 0; y < grid; y++) for (let x = 0; x < grid; x++) {
+      const i = y*grid+x;
+      const left = x ? i-1 : i, right = x < grid-1 ? i+1 : i;
+      const up = y ? i-grid : i, down = y < grid-1 ? i+grid : i;
+      const lap = heights[left]+heights[right]+heights[up]+heights[down]-4*heights[i];
+      const viscosity = velocity[left]+velocity[right]+velocity[up]+velocity[down]-4*velocity[i];
+      const edge = Math.min(x,y,grid-1-x,grid-1-y);
+      const damping = edge < 8 ? .97+.024*edge/8 : .994;
+      nextVelocity[i] = (velocity[i]+lap*.055+viscosity*.025)*damping;
     }
-    particles.forEach((p,i) => {
-      const margin = support*.6;
-      p.x = Math.max(margin,Math.min(width-margin,p.x));
-      p.y = Math.max(margin,Math.min(height-margin,p.y));
-      p.vx = (p.x-before[i][0])/dt;
-      p.vy = (p.y-before[i][1])/dt;
-    });
-    // Viscosity exchanges momentum between neighbours instead of bouncing.
-    for (let i = 0; i < particles.length; i++) for (let j = i+1; j < particles.length; j++) {
-      const a = particles[i], b = particles[j];
-      const q = Math.max(0,1-Math.hypot(a.x-b.x,a.y-b.y)/support)*.12;
-      const dx = (b.vx-a.vx)*q, dy = (b.vy-a.vy)*q;
-      a.vx += dx; a.vy += dy; b.vx -= dx; b.vy -= dy;
+    velocity.set(nextVelocity);
+    // Closed basin: remove numerical drift introduced by edge damping. Scale
+    // exceptional peaks together instead of clipping individual cells flat.
+    let heightSum = 0, velocitySum = 0;
+    for (let i = 0; i < cells; i++) {
+      heights[i] = (heights[i]+velocity[i])*.9995;
+      heightSum += heights[i]; velocitySum += velocity[i];
+    }
+    const meanHeight = heightSum/cells, meanVelocity = velocitySum/cells;
+    let peak = 0;
+    for (let i = 0; i < cells; i++) {
+      heights[i] -= meanHeight; velocity[i] -= meanVelocity;
+      peak = Math.max(peak,Math.abs(heights[i]));
+    }
+    if (peak > .9) {
+      const scale = .9/peak;
+      for (let i = 0; i < cells; i++) { heights[i] *= scale; velocity[i] *= scale; }
     }
   }
   function draw(now) {
     frame = 0;
-    const dt = Math.min((now-previous)/16.667 || 1, 1.5);
+    accumulator += Math.min(previous ? (now-previous)/1000 : 0, .05);
     previous = now;
-    if (!reduced.matches) simulate(dt);
-    else { strokes.length = 0; particles.forEach(p => { p.vx = p.vy = 0; }); }
-    field.fill(0);
-    let cx = 0, cy = 0;
-    for (const p of particles) {
-      cx += p.x; cy += p.y;
-      const gx = p.x/width*grid, gy = p.y/height*grid;
-      const rx = support/width*grid, ry = support/height*grid;
-      for (let y = Math.max(0,Math.floor(gy-ry)); y <= Math.min(grid-1,Math.ceil(gy+ry)); y++) {
-        for (let x = Math.max(0,Math.floor(gx-rx)); x <= Math.min(grid-1,Math.ceil(gx+rx)); x++) {
-          const q = 1-((x-gx)/rx)**2-((y-gy)/ry)**2;
-          if (q > 0) field[y*grid+x] += q*q*q;
-        }
-      }
+    if (reduced.matches) {
+      heights.fill(0); velocity.fill(0); strokes.length = 0; accumulator = 0;
+    } else {
+      disturb();
+      while (accumulator >= 1/120) { simulate(); accumulator -= 1/120; }
     }
-    for (let i = 0; i < field.length; i++) pixels[i] = Math.min(255,Math.round(field[i]*255/10));
+    for (let i = 0; i < cells; i++) {
+      const encoded = Math.round((heights[i]*.5+.5)*65535);
+      pixels[i*4] = encoded >> 8; pixels[i*4+1] = encoded & 255;
+      pixels[i*4+2] = 0; pixels[i*4+3] = 255;
+    }
     gl.activeTexture(gl.TEXTURE1);
-    gl.texImage2D(gl.TEXTURE_2D,0,gl.LUMINANCE,grid,grid,0,gl.LUMINANCE,gl.UNSIGNED_BYTE,pixels);
+    gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,grid,grid,0,gl.RGBA,gl.UNSIGNED_BYTE,pixels);
     gl.uniform2f(uniform.resolution,width,height);
-    gl.uniform2f(uniform.centre,cx/particles.length,cy/particles.length);
     gl.uniform2f(uniform.imageSize,image.naturalWidth,image.naturalHeight);
+    gl.uniform2f(uniform.texel,1/grid,1/grid);
+    gl.uniform1f(uniform.clock,reduced.matches ? 0 : now/1000);
     gl.drawArrays(gl.TRIANGLES,0,6);
     if (!reduced.matches) requestDraw();
   }
-  function move(event) {
+  function point(event) {
     const rect = figure.getBoundingClientRect();
-    const point = {x:event.clientX-rect.left,y:event.clientY-rect.top};
+    return {x:event.clientX-rect.left,y:event.clientY-rect.top};
+  }
+  function move(event) {
+    const current = point(event);
     if (lastPointer && !reduced.matches) {
-      strokes.push({...point,px:lastPointer.x,py:lastPointer.y});
-      if (strokes.length > 24) strokes.shift();
+      strokes.push({...current,px:lastPointer.x,py:lastPointer.y});
+      if (strokes.length > 16) strokes.shift();
     }
-    lastPointer = point;
+    lastPointer = current;
     requestDraw();
   }
   figure.addEventListener('pointermove',move);
-  figure.addEventListener('pointerenter',event => { lastPointer = null; move(event); });
+  figure.addEventListener('pointerenter',event => { lastPointer = point(event); });
   figure.addEventListener('pointerleave',() => { lastPointer = null; });
-  figure.addEventListener('pointerdown',event => { lastPointer = null; move(event); });
+  figure.addEventListener('pointerdown',event => {
+    const p = point(event); lastPointer = p;
+    if (!reduced.matches) strokes.push({...p,px:p.x,py:p.y,tap:true});
+    requestDraw();
+  });
   window.addEventListener('resize',resize);
   reduced.addEventListener('change',requestDraw);
-  document.addEventListener('visibilitychange',requestDraw);
+  document.addEventListener('visibilitychange',() => { previous = 0; requestDraw(); });
   canvas.addEventListener('webglcontextlost', event => {
     event.preventDefault(); ready = false; cancelAnimationFrame(frame); frame = 0;
   });
