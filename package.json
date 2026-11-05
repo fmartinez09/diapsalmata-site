@@ -1,0 +1,11 @@
+{
+  "name": "diapsalmata-local",
+  "private": true,
+  "scripts": {
+    "dev": "node preview.cjs",
+    "check": "node --check dist/script.js && node --check dist/jewel.js"
+  },
+  "dependencies": {
+    "three": "0.180.0"
+  }
+}

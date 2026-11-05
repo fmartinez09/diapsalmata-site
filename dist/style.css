@@ -8,6 +8,19 @@ footer{border-top:1px solid #c4c8b9;max-width:1120px;width:calc(100% - 96px);mar
 @media(max-width:650px){.masthead{height:75px;margin:0 22px}.name{font-size:19px}.masthead nav{gap:15px;font-size:10px}.opening{height:calc(83svh - 75px);min-height:490px}.opening figure{width:245px;height:225px}.opening h1{font-size:28px}.archive{width:calc(100% - 44px);margin-top:40px}.archive-heading>span{display:none}.archive-layout{grid-template-columns:1fr;gap:65px}.archive-heading{margin-bottom:28px}.entry h3{font-size:29px}footer{width:calc(100% - 44px)}}
 @media(prefers-reduced-motion:reduce){:root{scroll-behavior:auto}*{transition:none!important}}
 
-.botanical{align-self:end;min-width:0;pointer-events:none;margin:0 -14px -20px -20px}.botanical svg{display:block;width:100%;height:auto;overflow:hidden}.stem{fill:none;stroke:#59734a;stroke-width:1.2;stroke-linecap:round}.leaf{fill:url(#leaf-green)}.vein{fill:none;stroke:#bdd0a0;stroke-width:.35;opacity:.55}.frond-0{opacity:.8}.frond-3{opacity:.8}.frond-4{opacity:.6}.frond-5{fill:#385f3d}.botanical[data-growing] .stem{stroke-dasharray:1;stroke-dashoffset:1}.botanical[data-growing] .leaf{transform:scale(0)}
-@media(max-width:650px){.botanical{width:min(100%,380px);margin:-25px auto -20px}.archive-layout{gap:35px}}
-@media(prefers-reduced-motion:reduce){.botanical[data-growing] .stem{stroke-dashoffset:0!important}.botanical[data-growing] .leaf{transform:scale(1)!important}}
+/* Independent top anchor: expanding an entry never changes the piece's position. */
+.archive-layout{grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:54px;min-height:410px;overflow-anchor:none}
+.jewel{grid-column:2;grid-row:1;align-self:start;min-width:0;margin:0;position:relative}
+.entries{grid-column:1;grid-row:1;min-width:0}
+.jewel-stage{position:relative;width:100%;aspect-ratio:1.3;isolation:isolate}
+.jewel-stage canvas{position:absolute;inset:0;display:block;width:100%;height:100%;cursor:grab;touch-action:pan-y;opacity:0;transition:opacity .65s ease}
+.jewel-stage canvas.is-dragging{cursor:grabbing}
+.jewel-fallback{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;opacity:1;transition:opacity .4s ease}
+.jewel.is-ready canvas{opacity:1}.jewel.is-ready .jewel-fallback{opacity:0;pointer-events:none}
+.jewel-controls{min-height:30px;display:flex;align-items:center;justify-content:space-between;gap:12px;font:9px/1.6 var(--mono);color:#777c6c}
+.jewel-hint{visibility:hidden}.jewel.is-ready .jewel-hint{visibility:visible}
+.jewel-reset{border:0;background:none;color:var(--blue);font-size:19px;width:32px;height:32px;padding:0;cursor:pointer}
+.jewel-reset[hidden],.is-fallback .jewel-reset{display:none}
+@media(max-width:850px){.archive-layout{gap:32px;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr)}}
+@media(max-width:650px){.archive-layout{grid-template-columns:minmax(0,1fr);gap:38px}.jewel{grid-column:1;grid-row:1;width:100%;max-width:480px;margin:0 auto}.entries{grid-column:1;grid-row:2}.jewel-stage{aspect-ratio:1.35}.jewel-controls{font-size:8px}}
+
